@@ -427,7 +427,10 @@ it.effect.each(["opt-in desktop restart", "marked remote update"] as const)(
           providerInstanceId,
           status: "running",
           resumeCursor,
-          runtimePayload: { activeTurnId: originalTurnId },
+          runtimePayload: {
+            activeTurnId: originalTurnId,
+            modelSelection,
+          },
         });
         if (restart === "marked remote update") {
           assert.deepStrictEqual(

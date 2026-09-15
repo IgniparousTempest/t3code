@@ -388,11 +388,11 @@ function readRuntimePayload(runtimePayload: unknown): Record<string, unknown> {
     : {};
 }
 
-const isModelSelection = Schema.is(ModelSelection);
+const decodeModelSelectionOption = Schema.decodeUnknownOption(ModelSelection);
 
 function readRuntimeModelSelection(runtimePayload: unknown): ModelSelection | undefined {
   const value = readRuntimePayload(runtimePayload).modelSelection;
-  return isModelSelection(value) ? value : undefined;
+  return Option.getOrUndefined(decodeModelSelectionOption(value));
 }
 
 const isServerUpdateThreadContinuationError = Schema.is(ServerUpdateThreadContinuationError);

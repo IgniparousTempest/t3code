@@ -50,7 +50,7 @@ const makeThread = (
   session: {
     threadId: ThreadId.make(id),
     status,
-    providerName: "codex" as const,
+    providerName: ProviderDriverKind.make("codex"),
     providerInstanceId,
     runtimeMode: "full-access" as const,
     activeTurnId,
@@ -198,6 +198,13 @@ it.effect.each(
         recovery === "marked update" ? null : fallbackContinuationTurnId,
       );
       const fallbackProviderInstanceId = ProviderInstanceId.make("claudeAgent");
+      fallback.modelSelection = {
+        instanceId: fallbackProviderInstanceId,
+        model: "claude-opus-4-6",
+        options: [{ id: "effort", value: "high" }],
+      };
+      fallback.session.providerName = ProviderDriverKind.make("claudeAgent");
+      fallback.session.providerInstanceId = fallbackProviderInstanceId;
       const continuationSent = yield* Deferred.make<void>();
       const continuationCleared = yield* Deferred.make<void>();
       const sends: ProviderSendTurnInput[] = [];
@@ -384,6 +391,11 @@ it.effect("continues with the interrupted turn selection after thread metadata c
     const turnId = TurnId.make("turn-selection-changed");
     const thread = makeThread("thread-selection-changed", "running", turnId);
     const interruptedTurnSelection = thread.modelSelection;
+    const legacyInterruptedTurnSelection = {
+      provider: "codex",
+      model: interruptedTurnSelection.model,
+      options: interruptedTurnSelection.options,
+    };
     thread.modelSelection = {
       instanceId: ProviderInstanceId.make("opencode"),
       model: "openai/gpt-5",
@@ -399,7 +411,7 @@ it.effect("continues with the interrupted turn selection after thread metadata c
       resumeCursor: { threadId: thread.id },
       runtimePayload: {
         activeTurnId: turnId,
-        modelSelection: interruptedTurnSelection,
+        modelSelection: legacyInterruptedTurnSelection,
       },
     };
 
@@ -454,7 +466,7 @@ it.effect("continues with the interrupted turn selection after thread metadata c
     yield* Deferred.await(cleared);
     assert.deepStrictEqual(binding.runtimePayload, {
       activeTurnId: null,
-      modelSelection: interruptedTurnSelection,
+      modelSelection: legacyInterruptedTurnSelection,
       continueAfterServerUpdate: null,
       continueAfterServerUpdatePrepared: null,
     });
